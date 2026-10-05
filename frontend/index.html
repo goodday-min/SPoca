@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>스포카</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <div id="wake-banner" class="wake-banner" role="status" hidden>서버를 깨우는 중이라 조금 걸려요</div>
+    <main id="views" class="views">
+      <!-- 홈 화면 (1차: 복습·영어 대화는 자리만, 다크 모드 토글·N일 연속 배지는 나중에 추가) -->
+      <section class="view view-home" data-view="home" hidden>
+        <div class="content home">
+          <div class="brand">
+            <div class="mascot" aria-hidden="true">
+              <svg width="70" height="70" viewBox="0 0 100 100" aria-hidden="true"><rect x="18" y="16" width="64" height="72" rx="12" fill="#136F68"/><rect x="26" y="16" width="56" height="72" rx="10" fill="#1B8A81"/><rect x="34" y="82" width="42" height="4" rx="2" fill="#fff" opacity=".7"/>
+                <circle cx="46" cy="44" r="7" fill="#fff"/><circle cx="68" cy="44" r="7" fill="#fff"/><circle cx="47.5" cy="45" r="3.3" fill="#2B1A12"/><circle cx="69.5" cy="45" r="3.3" fill="#2B1A12"/>
+                <path d="M48 58q9 8 18 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M60 16v-8l8 6z" fill="#D3694B"/></svg>
+            </div>
+            <div class="wordmark"><span class="w1">스</span><span class="w2">포카</span></div>
+            <div class="tagline">SPEAK · VOCA</div>
+          </div>
+
+          <a class="card home-card" href="#/review">
+            <div class="home-row">
+              <div class="tile tile-teal"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></div>
+              <div class="home-text"><b>오늘의 복습</b><span>헷갈리는 단어만 탭해서 확인해요</span></div>
+            </div>
+            <p class="soon">복습 기능은 준비 중이에요</p>
+          </a>
+
+          <button class="card home-card home-btn" id="home-english" type="button">
+            <div class="home-row">
+              <div class="tile tile-coral"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19a2 2 0 0 1 2-2h13"/></svg></div>
+              <div class="home-text"><b>영어 대화 시작</b><span>책을 스캔하고 AI와 영어로 대화해요</span></div>
+            </div>
+            <span class="go-link go-coral">시작하기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span>
+          </button>
+
+          <a class="card home-card" href="#/coach">
+            <div class="home-row">
+              <div class="tile tile-sand"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01"/></svg></div>
+              <div class="home-text"><b>AI코치</b><span>내 학습 현황을 AI코치에게 물어봐요</span></div>
+            </div>
+            <span class="go-link go-sand">열기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></span>
+          </a>
+        </div>
+      </section>
+
+      <section class="view" data-view="words" hidden>
+        <header class="topbar">
+          <h1 class="title">단어</h1>
+          <div class="topbar-actions"></div>
+        </header>
+        <div class="content">
+          <div class="placeholder">단어 화면은 M3에서 만들어요</div>
+        </div>
+      </section>
+
+      <section class="view" data-view="review" hidden>
+        <header class="topbar">
+          <h1 class="title">복습</h1>
+          <div class="topbar-actions"></div>
+        </header>
+        <div class="content">
+          <div class="placeholder">복습 화면은 M3에서 만들어요</div>
+        </div>
+      </section>
+
+      <!-- AI코치 화면 -->
+      <section class="view view-chat" data-view="coach" hidden>
+        <header class="topbar">
+          <h1 class="title">AI코치</h1>
+          <span class="spacer"></span>
+          <button id="chat-new" class="btn btn-create" type="button">새 대화</button>
+          <button id="chat-history" class="btn btn-open" type="button">지난 대화</button>
+        </header>
+        <div class="strip" id="chat-strip"><span id="strip-overall">불러오는 중…</span><span id="strip-recent"></span></div>
+        <div class="chat-body" id="chat-body">
+          <div id="chat-welcome">
+            <div class="msg-row"><div class="ava"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01"/></svg></div><div class="bubble">내 학습 기록을 보고 물어보세요.</div></div>
+            <p class="faint-note">이런 걸 물어볼 수 있어요</p>
+            <div class="chips">
+              <button type="button" class="chip" data-q="최근 7일 어땠어?">최근 7일 어땠어?</button>
+              <button type="button" class="chip" data-q="잘 외운 날은?">잘 외운 날은?</button>
+              <button type="button" class="chip" data-q="앞으로 어떻게 할까?">앞으로 어떻게 할까?</button>
+            </div>
+          </div>
+          <div id="chat-messages"></div>
+        </div>
+        <form class="inputbar" id="chat-form" autocomplete="off">
+          <input id="chat-input" type="text" maxlength="4000" placeholder="질문을 입력하세요" aria-label="질문">
+          <button id="chat-send" class="send-btn" type="submit" aria-label="보내기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </form>
+        <p class="ai-note">AI가 생성한 답변이에요</p>
+      </section>
+
+      <!-- 학습 기록 화면 (M4 전까지 하단 탭 "리포트"에 임시 연결) -->
+      <section class="view" data-view="report" hidden>
+        <header class="topbar">
+          <a class="icon-btn" href="#/home" aria-label="뒤로"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
+          <h1 class="title">학습 기록</h1>
+          <span class="spacer"></span>
+          <button id="rec-add" class="btn btn-create" type="button">+ 기록</button>
+        </header>
+        <div class="content">
+          <div class="card" id="rec-summary">
+            <div class="seg" role="tablist">
+              <button type="button" class="seg-btn on" data-range="overall" role="tab" aria-selected="true">전체</button>
+              <button type="button" class="seg-btn" data-range="recent_7d" role="tab" aria-selected="false">최근 7일</button>
+            </div>
+            <p class="period" id="rec-period"></p>
+            <div class="stats">
+              <div><small>개수</small><b id="rec-count">-</b></div>
+              <div><small>평균</small><b id="rec-avg">-</b></div>
+              <div><small>최대</small><b id="rec-max">-</b></div>
+              <div><small>최소</small><b id="rec-min">-</b></div>
+            </div>
+            <div class="trend"><span>최근 추세</span><b id="rec-trend">-</b></div>
+            <p class="state-msg" id="rec-summary-error" hidden></p>
+          </div>
+
+          <h2 class="section-title">기록 목록 <small>최신 날짜순</small></h2>
+          <div class="card list-card" id="rec-list"></div>
+          <p class="state-msg" id="rec-state"></p>
+          <button id="rec-more" class="btn btn-ghost" type="button" hidden>더 보기</button>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="하단 메뉴">
+      <a class="tab" href="#/home" data-tab="home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg>
+        <span>홈</span>
+      </a>
+      <a class="tab" href="#/words" data-tab="words">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h11a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>
+        <span>단어</span>
+      </a>
+      <a class="tab" href="#/review" data-tab="review">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg>
+        <span>복습</span>
+      </a>
+      <a class="tab" href="#/coach" data-tab="coach">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v10.5H10l-4.5 3.5V16H4z"/></svg>
+        <span>AI코치</span>
+      </a>
+      <a class="tab" href="#/report" data-tab="report">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11"/><path d="M12 20V5"/><path d="M19 20v-6.5"/></svg>
+        <span>리포트</span>
+      </a>
+    </nav>
+  </div>
+
+  <dialog id="rec-dialog" class="dialog" aria-labelledby="rec-dialog-title">
+    <form id="rec-form" method="dialog" novalidate>
+      <h3 id="rec-dialog-title">기록 추가</h3>
+      <label class="field"><small>날짜</small><input id="rec-date" type="date" required></label>
+      <p class="tip" id="rec-error" role="alert" hidden></p>
+      <label class="field"><small>외운 단어 수</small><input id="rec-value" type="number" inputmode="numeric" min="0" step="1" required></label>
+      <label class="field"><small>메모 (선택)</small><input id="rec-memo" type="text" maxlength="200"></label>
+      <div class="dialog-btns">
+        <button type="button" class="btn btn-cancel" id="rec-cancel">취소</button>
+        <button type="submit" class="btn btn-open" id="rec-save">저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="chat-sheet" class="sheet" aria-labelledby="chat-sheet-title">
+    <div class="grab"></div>
+    <h3 id="chat-sheet-title">지난 대화</h3>
+    <div id="chat-sheet-list" class="sheet-list"></div>
+    <p class="state-msg" id="chat-sheet-state" hidden></p>
+    <button type="button" class="btn btn-cancel sheet-close" id="chat-sheet-close">닫기</button>
+  </dialog>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

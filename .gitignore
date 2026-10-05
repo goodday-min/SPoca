@@ -1,0 +1,22 @@
+# 비밀 값
+.env
+*.env.local
+serviceAccount*.json
+*-firebase-adminsdk-*.json
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 편집기/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+M2_1_Spoca/
+
+M2_1_Spoca/
