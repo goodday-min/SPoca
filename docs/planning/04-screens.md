@@ -1,6 +1,6 @@
 # M1_2 화면 설계서 (v2) — 화면 구성 확정 (스토리보드 완성)
 
-> 전체 화면 스토리보드(24개 화면, 한 곳에서 보기): claude.ai 아티팩트 "스포카 화면 스토리보드 v2" (비공개)
+> 전체 화면 스토리보드(25장, 한 곳에서 보기): [storyboard.html](storyboard.html) (이미지는 `storyboard/img/`). 원본은 claude.ai 디자인 아티팩트 "스포카 화면 스토리보드 v2"
 > 구현된 실제 화면은 README의 "화면" 섹션 스크린샷과 배포 주소(https://spoca-ecru.vercel.app)에서 볼 수 있다.
 > 구현 중 바뀐 부분(AI코치 명칭, 단어 화면 개편, CSV·JSON 버튼 등)은 `05-task.md`의 "확정된 결정" 표가 최신이다.
 

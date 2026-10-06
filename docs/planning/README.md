@@ -7,7 +7,7 @@
 | 1 | [01-scenario.md](01-scenario.md) | 시나리오: 서비스 개요, 기능 구성, 복습 규칙, 하루의 흐름 |
 | 2 | [02-prd.md](02-prd.md) | 요구사항 명세서(PRD): 기능 F1~F8, 데이터 모델, API, 비기능 요구사항 |
 | 3 | [03-decisions.md](03-decisions.md) | 확정 사항: 합의된 내용 요약 |
-| 4 | [04-screens.md](04-screens.md) | 화면 설계서(스토리보드 설명): 화면별 구성 |
+| 4 | [04-screens.md](04-screens.md) | 화면 설계서(스토리보드 설명): 화면별 구성 · [스토리보드 갤러리](storyboard.html) |
 | 5 | [05-task.md](05-task.md) | 작업지시서(TASK): 마일스톤 M0~M6, 작업별 완료 기준, 구현 중 확정한 결정 표 |
 | 6 | [06-explain.md](06-explain.md) | 설명 준비: 시계열 요약·컨텍스트 주입, 라우터/서비스, Pydantic, Firestore CRUD, CORS·키 관리 |
 
@@ -16,4 +16,4 @@
 - 기획 단계의 **"AI 비서"·"코칭 채팅"**은 구현에서 **"AI코치"**로 이름을 통일했습니다.
 - 기획 단계의 "내보내기 메뉴(CSV/JSON 선택)"는 구현에서 **CSV·JSON 버튼 2개**가 되었습니다.
 - 보너스 5.1의 외부 연동은 B(MCP 서버)까지 구현했고, C(GPT Actions)는 건너뛰었습니다.
-- 화면 스토리보드 원본(24개 화면)은 claude.ai 아티팩트로 만들어 비공개 상태입니다. 구현된 화면은 [README의 스크린샷](../../README.md)과 배포 주소에서 볼 수 있습니다.
+- 화면 스토리보드 25장은 [storyboard.html](storyboard.html)에서 볼 수 있습니다(저장소 안 이미지). 구현된 화면은 [README의 스크린샷](../../README.md)과 배포 주소에서 볼 수 있습니다.
