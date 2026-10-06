@@ -7,6 +7,7 @@ import * as reviewResult from "./review-result.js";
 import * as home from "./home.js";
 import * as report from "./report.js";
 import * as english from "./english.js";
+import { api } from "./api.js";
 import * as theme from "./theme.js";
 
 // 화면 전환: 주소의 #/이름 에 맞는 화면(section)만 보여 준다.
@@ -28,6 +29,22 @@ const TAB_OF = { "word-add": "words", "review-result": "review", records: "repor
 
 let lastRoute = null;
 
+// 하단 "복습" 아이콘 위에 오늘 복습할 단어 수를 표시한다 (복습을 마쳤으면 숨김)
+let badgeAt = 0;
+async function refreshReviewBadge(force = false) {
+  if (!force && Date.now() - badgeAt < 15000) return;
+  badgeAt = Date.now();
+  try {
+    const r = await api.reviewToday();
+    const n = r.completed_today ? 0 : r.count;
+    const el = document.getElementById("review-badge");
+    el.textContent = n > 99 ? "99+" : String(n);
+    el.hidden = n === 0;
+  } catch {
+    /* 서버가 잠들어 있어도 화면은 그대로 둔다 */
+  }
+}
+
 function render() {
   const route = currentRoute();
   // 영어 대화 중에 다른 화면으로 가려 하면(뒤로가기·하단 탭 포함) 먼저 확인을 받는다
@@ -46,6 +63,7 @@ function render() {
   tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === (TAB_OF[route] || route)));
   window.scrollTo(0, 0);
   onShow[route]?.();
+  refreshReviewBadge(route === "review-result" || lastRoute === "review-result");
 }
 
 records.init();
@@ -61,5 +79,5 @@ render();
 
 // 홈: 영어 대화 시작
 document.getElementById("home-english")?.addEventListener("click", () => {
-  location.hash = "#/english";
+  english.openSource();
 });

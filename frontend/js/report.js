@@ -46,7 +46,7 @@ function renderSummary(r) {
     $("rp-trend").classList.remove("faint");
   } else {
     // 추세는 최근 7일 보기에서만 보여 준다
-    $("rp-trend-label").textContent = "추세";
+    $("rp-trend-label").textContent = "";
     $("rp-trend").textContent = "추세는 7일 보기에서";
     $("rp-trend").classList.add("faint");
   }
@@ -217,7 +217,7 @@ function renderDist(r) {
   g1.className = "rp-dist-title";
   g1.textContent = "복습 중";
   box.appendChild(g1);
-  STAGE_NAMES.forEach((s) => box.appendChild(distRow(STAGE_LABEL[s], d.reviewing[s], max, "stage")));
+  STAGE_NAMES.forEach((s) => box.appendChild(distRow(STAGE_LABEL[s], d.reviewing[s], max, "stage st-" + s)));
   const g2 = document.createElement("p");
   g2.className = "rp-dist-title";
   g2.textContent = "끝난 단어";

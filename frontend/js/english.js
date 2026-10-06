@@ -29,7 +29,9 @@ const state = {
   startedAt: 0,
   timer: null,
   leaveTarget: null,
+  replaceNext: false, // 다음에 고르는 사진으로 전부 바꾼다("사진 다시 고르기")
 };
+let pendingFile = null; // 홈에서 고른 사진: 영어 대화 화면이 열린 뒤 바로 읽는다
 
 const speechRecognition = () => window.SpeechRecognition || window.webkitSpeechRecognition;
 const hasVoice = () =>
@@ -41,6 +43,7 @@ function setStep(step) {
   $("eng-step-scan").hidden = step !== "scan";
   $("eng-step-level").hidden = step !== "level";
   $("eng-step-talk").hidden = step !== "talk";
+  $("eng-title").textContent = step === "level" ? "책 스캔" : "영어 대화";
   const talk = step === "talk";
   $("eng-timer").hidden = !talk;
   $("eng-end").hidden = !talk;
@@ -92,17 +95,47 @@ function hideScanError() {
   $("eng-retake").hidden = true;
 }
 
+/** 홈에서 "책 읽고 대화하기"를 누르면 사진 고르기 시트를 연다 */
+export function openSource() {
+  state.replaceNext = false;
+  $("eng-source").showModal();
+}
+
+async function addFile(file) {
+  hideScanError();
+  try {
+    const src = await shrink(file);
+    if (state.replaceNext) state.pages = [];
+    state.replaceNext = false;
+    if (state.pages.length < MAX_PAGES) state.pages.push(src);
+    renderPages();
+    return true;
+  } catch (e) {
+    showScanError(e.message, false);
+    return false;
+  }
+}
+
+async function processFile(file) {
+  $("eng-step-scan").classList.add("reading");
+  const ok = await addFile(file);
+  if (ok) await readPages();
+  else $("eng-step-scan").classList.remove("reading");
+}
+
 async function onFilePicked(event) {
   const file = event.target.files[0];
   event.target.value = ""; // 같은 사진을 다시 골라도 반응하도록
-  if (!file || state.pages.length >= MAX_PAGES) return;
-  hideScanError();
-  try {
-    state.pages.push(await shrink(file));
-    renderPages();
-  } catch (e) {
-    showScanError(e.message, false);
+  if (!file) return;
+  if ($("eng-source").open) $("eng-source").close();
+  if (location.hash !== "#/english") {
+    // 홈에서 고른 경우: 영어 대화 화면으로 가서 바로 읽는다
+    pendingFile = file;
+    location.hash = "#/english";
+    return;
   }
+  setStep("scan");
+  await processFile(file);
 }
 
 async function readPages() {
@@ -115,25 +148,22 @@ async function readPages() {
     const res = await api.englishScan(state.pages);
     state.bookText = res.text;
     $("eng-done").textContent = `스캔 완료 · 문장 ${res.sentence_count}개 인식됨`;
-    const done = $("eng-pages-done");
-    done.replaceChildren(
-      ...state.pages.map((src, i) => {
-        const item = document.createElement("div");
-        item.className = "eng-page";
-        const img = document.createElement("img");
-        img.src = src;
-        img.alt = `책 사진 ${i + 1}`;
-        item.appendChild(img);
-        return item;
-      })
-    );
+    const hero = $("eng-hero");
+    hero.replaceChildren();
+    const himg = document.createElement("img");
+    himg.src = state.pages[0];
+    himg.alt = "스캔한 책 사진";
+    hero.appendChild(himg);
+    $("eng-addpage").hidden = state.pages.length >= MAX_PAGES;
     setStep("level");
   } catch (e) {
+    $("eng-step-scan").classList.remove("reading");
     // 글자를 못 읽은 경우(422)는 다시 찍기를 안내한다
     showScanError(e.status === 422 ? "글자를 읽지 못했어요. 글자가 잘 보이게 다시 찍어 주세요" : e.message, e.status === 422);
   } finally {
     btn.textContent = "읽기";
     btn.disabled = state.pages.length === 0;
+    $("eng-step-scan").classList.remove("reading");
   }
 }
 
@@ -550,9 +580,22 @@ export function init() {
   $("eng-read").addEventListener("click", readPages);
   $("eng-retake").addEventListener("click", retake);
   $("eng-rescan").addEventListener("click", () => {
-    retake();
-    setStep("scan");
+    state.replaceNext = true;
+    $("eng-source").showModal();
   });
+  $("eng-addpage").addEventListener("click", () => {
+    state.replaceNext = false;
+    $("eng-source").showModal();
+  });
+  $("eng-src-camera").addEventListener("click", () => {
+    $("eng-source").close();
+    $("eng-file-camera").click();
+  });
+  $("eng-src-gallery").addEventListener("click", () => {
+    $("eng-source").close();
+    $("eng-file-gallery").click();
+  });
+  $("eng-src-close").addEventListener("click", () => $("eng-source").close());
   document.querySelectorAll(".eng-level").forEach((b) =>
     b.addEventListener("click", () => {
       state.level = b.dataset.level;
@@ -586,6 +629,12 @@ export function show() {
   const ok = hasVoice();
   $("eng-nosupport").hidden = ok;
   $("eng-step-scan").hidden = !ok;
+  if (pendingFile && ok) {
+    const f = pendingFile;
+    pendingFile = null;
+    processFile(f);
+  }
+  pendingFile = null;
 }
 
 /** 이 화면을 떠날 때 */

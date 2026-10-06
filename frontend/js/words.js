@@ -81,7 +81,8 @@ function renderChips() {
     chip.type = "button";
     chip.className = "chip stage-chip" + (state.stage === stage ? " on" : "");
     chip.setAttribute("aria-pressed", String(state.stage === stage));
-    chip.textContent = `${STAGE_LABEL[stage]} ${count}`;
+    chip.dataset.stage = stage;
+    chip.textContent = `${stage === "Master" ? "M" : STAGE_LABEL[stage]} ${count}`;
     chip.addEventListener("click", () => {
       state.stage = state.stage === stage ? null : stage; // 다시 누르면 전체
       renderList();
@@ -209,12 +210,13 @@ function renderList() {
   for (const item of shown) list.appendChild(makeRow(item));
 
   const filtered = state.stage !== null || state.query.trim() !== "";
+  $("word-total").textContent = `${state.items.length}개`;
   $("word-count").textContent = filtered
     ? `단어 ${shown.length}개 · 전체 ${state.items.length}개`
     : `단어 ${state.items.length}개`;
   const msg = $("word-state");
   msg.hidden = shown.length > 0;
-  if (!state.items.length) msg.textContent = "아직 단어가 없어요. 위의 + 단어 등록으로 시작해 보세요";
+  if (!state.items.length) msg.textContent = "아직 단어가 없어요. 오른쪽 아래 + 버튼으로 시작해 보세요";
   else if (!shown.length) msg.textContent = "찾는 단어가 없어요";
   list.hidden = shown.length === 0;
   $("word-sort").value = state.sort;
