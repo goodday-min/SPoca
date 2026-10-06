@@ -1,8 +1,123 @@
 # 스포카 (Spoca) — 나만의 AI 비서
 
-내 학습 기록(일별 외운 단어 수)을 분석해 Firestore에 저장하고, AI가 그 요약을 바탕으로 코칭해 주는 웹 서비스입니다.
+영어 단어 암기 앱 **스포카(SPEAK · VOCA)**입니다. 매일 외운 단어 수(학습 기록)를 시계열 데이터로 쌓아 Firestore에 저장하고, 그 **요약을 AI코치의 대화 맥락에 주입**해 "내 기록을 아는 코치"와 대화할 수 있게 만든 웹 서비스입니다. 단어장, 간격 반복 복습, 책 사진으로 하는 영어 대화, 리포트도 함께 있습니다.
 
-> 작성 중입니다. 서비스 소개, 배포 URL, 실행 방법, 환경변수 목록, 시드 실행 방법, 스크린샷은 M6 단계에서 채웁니다.
+## 배포 주소
+| 구분 | 주소 |
+| --- | --- |
+| 프론트엔드 (Vercel) | https://spoca-ecru.vercel.app |
+| 백엔드 API (Render) | https://spoca-api.onrender.com |
+| Swagger 문서 | https://spoca-api.onrender.com/docs |
+| 저장소 | https://github.com/goodday-min/SPoca |
+
+> 백엔드는 무료 플랜이라 한동안 쓰지 않으면 잠들어 있다가 **첫 요청에 30초~1분** 걸릴 수 있습니다. 이때 화면에 "서버를 깨우는 중이라 조금 걸려요"가 표시됩니다.
+
+## 주요 기능
+| 영역 | 내용 |
+| --- | --- |
+| 학습 기록 | 날짜·값(외운 단어 수)·메모 추가/수정/삭제, 같은 날짜 중복 거부, 전체/최근 7일 요약(개수·평균·최대·최소·추세), CSV·JSON 내보내기 |
+| AI코치 | 요약을 시스템 프롬프트에 주입한 대화, 지난 대화 저장·불러오기·삭제, 필요하면 GPT가 도구로 기록을 더 조회(보너스 5.1) |
+| 단어장 | 직접 등록, 책 사진 스캔 등록, 검색·단계별 보기, 수정·삭제 |
+| 복습 | 등록일 + 0/1/3/7/30일 간격 반복, 하루 한 번 완료, 연속 학습 일수 |
+| 영어 대화 | 책 사진 → 영어 본문 인식 → 음성(STT/TTS)으로 AI와 대화 → 중요 단어를 단어장에 등록 |
+| 리포트 | 최근 7일/월/전체 그래프·요약, 단계 분포, 최장 연속 기록·요일별 평균 |
+| 기타 | 다크 모드, 모바일 우선 화면 |
+
+## 기술 스택
+| 구분 | 사용 기술 |
+| --- | --- |
+| 백엔드 | Python, FastAPI, Pydantic 2, Uvicorn |
+| 데이터베이스 | Firebase Firestore (firebase-admin) — 컬렉션 `data`, `conversations`, `words`, `reviews` |
+| AI | OpenAI 호환 API(교육장, `gpt-5-mini`)로 대화, Anthropic 호환 API(교육장)로 사진 읽기 |
+| 프론트엔드 | 바닐라 HTML/CSS/JS (빌드 없음), Web Speech API |
+| 배포 | Render(백엔드), Vercel(프론트엔드) |
+| 시험 | pytest (백엔드 테스트 134개) |
+
+## 화면 (배포 환경에서 촬영)
+| AI코치 — 요약이 반영된 답변 | 학습 기록 관리 | 지난 대화 기록 |
+| --- | --- | --- |
+| ![AI코치 채팅](docs/images/screenshot-chat.png) | ![학습 기록 관리](docs/images/screenshot-records.png) | ![지난 대화 기록](docs/images/screenshot-history.png) |
+
+- **AI코치**: "최근 7일 어땠어?"에 요약의 수치(7일 기록, 평균 9.9개, 최대 15개, 최소 2개, 직전 7일 대비 추세 "유지")와 날짜별 값이 그대로 반영됩니다.
+- **학습 기록**: 전체/최근 7일 요약 카드(개수·평균·최대·최소·추세)와 날짜순 목록, 추가·수정·삭제, CSV·JSON 내보내기.
+- **지난 대화**: 대화가 자동 저장되어 목록에서 다시 불러오거나 삭제할 수 있습니다.
+
+## 핵심 흐름: 시계열 → 요약 → 컨텍스트 주입
+```
+학습 기록(date, value, memo)  ──저장──▶  Firestore `data`
+        │
+        ▼  GET /api/data/summary
+요약 계산 (전체 + 최근 7일: 개수·평균·최대·최소·추세, 날짜별 값)
+        │
+        ▼  POST /api/chat
+시스템 프롬프트에 요약을 삽입 + 지난 대화 + 사용자 질문  ──▶  GPT
+        │
+        ▼
+요약 수치가 반영된 답변  ──저장──▶  Firestore `conversations`
+```
+- **라우터**(`app/routers`)는 요청을 받고 응답 모양을 정하고, **서비스**(`app/services`)가 계산·저장·AI 호출을 맡고, **스키마**(`app/schemas`, Pydantic)가 입력을 검증합니다.
+- 오류는 모두 `{"detail": "한국어 문구"}` 한 가지 모양입니다.
+
+## 로컬 실행
+필요: Python 3.10 이상, Firebase 프로젝트(Firestore), 교육장 API 키.
+
+```powershell
+# 1) 백엔드 (backend 폴더)
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env          # .env 를 열어 값 채우기 (아래 환경변수 표 참고)
+uvicorn app.main:app --reload   # http://127.0.0.1:8000  (문서: /docs)
+
+# 2) 프론트엔드 (frontend 폴더, 새 터미널)
+cd frontend
+python -m http.server 5500      # http://127.0.0.1:5500
+```
+프론트는 접속한 주소가 로컬이면 `http://127.0.0.1:8000`, 배포 주소면 Render 주소를 자동으로 씁니다(`frontend/js/config.js`).
+
+## 환경변수
+`backend/.env`(로컬)와 Render의 Environment(배포)에 넣습니다. **`.env`와 서비스 계정 키는 저장소에 올리지 않습니다**(`.gitignore`).
+
+| 이름 | 설명 |
+| --- | --- |
+| `FIREBASE_SERVICE_ACCOUNT_PATH` | 로컬: 서비스 계정 JSON 파일 경로 |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | 배포(Render): 서비스 계정 JSON 내용을 한 줄로 (둘 중 하나만 사용) |
+| `OPENAI_API_KEY` | 교육장 OpenAI 호환 키 (대화) |
+| `OPENAI_BASE_URL` | 기본 `https://copa.codyssey.kr/v1` |
+| `OPENAI_MODEL` | 기본 `gpt-5-mini` |
+| `ANTHROPIC_API_KEY` | 교육장 Anthropic 호환 키 (책 사진 읽기·영어 대화 스캔). **OpenAI 키와 별도 키** |
+| `ANTHROPIC_BASE_URL` | 기본 `https://copa.codyssey.kr/v1` |
+| `ANTHROPIC_VISION_MODEL` | 기본 `claude-sonnet-4` |
+| `ALLOWED_ORIGINS` | CORS로 허용할 프론트 주소(쉼표로 구분). 로컬 2개 + Vercel 주소 |
+
+## 샘플 데이터(시드) 넣기
+빈 데이터베이스에서 시작하면 요약·그래프가 비어 보이므로, 2026-05-28 ~ 2026-10-04 중 100건 이상의 학습 기록을 한 번 넣습니다. 이미 있는 날짜는 건너뛰어 여러 번 실행해도 중복되지 않고, 같은 값이 만들어집니다.
+
+```powershell
+cd backend                                      # 가상환경을 켠 상태
+python ../scripts/seed_data.py --dry-run        # 저장 없이 개수만 확인
+python ../scripts/seed_data.py                  # 실제로 저장
+```
+
+## 테스트
+```powershell
+cd backend
+python -m pytest tests -v       # 134개
+```
+
+## API 한눈에 보기
+전체 명세는 Swagger(`/docs`)에서 직접 실행해 볼 수 있습니다.
+
+| 영역 | 경로 |
+| --- | --- |
+| 학습 기록 | `POST/GET /api/data`, `PUT/DELETE /api/data/{id}`, `GET /api/data/summary`, `GET /api/data/statistics`, `GET /api/data/export` |
+| AI코치 | `POST /api/chat`, `GET/POST /api/conversations`, `GET/DELETE /api/conversations/{id}` |
+| 단어 | `POST/GET /api/words`, `PUT/DELETE /api/words/{id}`, `POST /api/words/scan` |
+| 복습 | `GET /api/review/today`, `POST /api/review/complete`, `GET /api/streak` |
+| 리포트 | `GET /api/report` |
+| 영어 대화 | `POST /api/english/scan`, `/chat`, `/finish` |
+| 상태 확인 | `GET /api/health`, `GET /api/health/db` |
 
 ## 폴더 구조
 ```
