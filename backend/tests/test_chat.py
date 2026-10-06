@@ -47,3 +47,15 @@ if __name__ == "__main__":
             fn()
             print("통과:", name)
     print("모두 통과")
+
+
+def test_prompt_lists_daily_values_including_today():
+    from datetime import date
+    from app.services.summary_service import build_summary
+
+    t = date(2026, 10, 6)
+    s = build_summary([{"date": "2026-10-06", "value": 2}, {"date": "2026-10-04", "value": 9}], t)
+    p = build_system_prompt(s)
+    assert "2026-10-06 (오늘): 2개" in p
+    assert "2026-10-04: 9개" in p
+    assert "2026-10-05: 기록 없음" in p

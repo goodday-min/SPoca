@@ -34,6 +34,12 @@ def build_system_prompt(summary: dict) -> str:
         f"- 직전 7일 하루 평균: {_fmt(recent['previous_average'], '개')}",
         f"- 추세(직전 7일 평균 대비): {recent['trend']}",
     ]
+    daily = recent.get("daily")
+    if daily:
+        lines.append("- 최근 7일 날짜별 외운 단어 수 (기록 없는 날은 '기록 없음'):")
+        for d in daily:
+            mark = " (오늘)" if d["date"] == summary["today"] else ""
+            lines.append(f"  · {d['date']}{mark}: {'기록 없음' if d['value'] is None else str(d['value']) + '개'}")
     return "\n".join(lines)
 
 

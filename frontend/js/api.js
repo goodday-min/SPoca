@@ -73,6 +73,19 @@ export const api = {
   updateData: (id, item) => request("PUT", `/data/${id}`, { body: item }),
   deleteData: (id) => request("DELETE", `/data/${id}`),
 
+  // --- 단어장 ---
+  listWords: (sort = "latest") => request("GET", "/words", { query: { sort } }),
+  createWord: (item) => request("POST", "/words", { body: item }),
+  updateWord: (id, item) => request("PUT", `/words/${id}`, { body: item }),
+  deleteWord: (id) => request("DELETE", `/words/${id}`),
+  scanWords: (image, registeredDate) =>
+    request("POST", "/words/scan", { body: { image, registered_date: registeredDate || null } }),
+
+  // --- 복습 ---
+  reviewToday: () => request("GET", "/review/today"),
+  completeReview: (tappedIds) => request("POST", "/review/complete", { body: { tapped_ids: tappedIds } }),
+  getStreak: () => request("GET", "/streak"),
+
   // --- 대화 ---
   listConversations: (limit = 50) => request("GET", "/conversations", { query: { limit } }),
   getConversation: (id) => request("GET", `/conversations/${id}`),

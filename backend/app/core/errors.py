@@ -17,6 +17,12 @@ FIELD_LABELS = {
     "cursor": "커서",
     "start": "시작일",
     "end": "종료일",
+    "word": "단어",
+    "meaning": "뜻",
+    "example": "예문",
+    "registered_date": "등록일",
+    "sort": "정렬 기준",
+    "image": "사진",
 }
 FALLBACK = "입력값이 올바르지 않아요"
 
@@ -32,6 +38,11 @@ def _label(loc: tuple) -> str | None:
 def _reason(err: dict) -> str:
     t, ctx, msg = err.get("type", ""), err.get("ctx") or {}, err.get("msg", "")
     loc = err.get("loc", ())
+    if "image" in loc:  # 사진은 글자 수가 아니라 크기·형식으로 안내한다
+        if t == "string_too_long":
+            return "사진이 너무 커요. 더 작게 줄여서 올려 주세요"
+        if t == "string_pattern_mismatch":
+            return "JPEG·PNG·WebP 사진만 올릴 수 있어요"
     if t == "missing":
         return "꼭 필요해요"
     if t == "string_too_long":
@@ -53,7 +64,7 @@ def _reason(err: dict) -> str:
     if t == "string_type":
         return "글자여야 해요"
     if t == "string_pattern_mismatch":
-        return "YYYY-MM-DD 형식으로 입력해 주세요" if any(k in loc for k in ("date", "start", "end", "cursor")) else "형식이 올바르지 않아요"
+        return "YYYY-MM-DD 형식으로 입력해 주세요" if any(k in loc for k in ("date", "registered_date", "start", "end", "cursor")) else "형식이 올바르지 않아요"
     if t == "literal_error":
         return "허용되지 않는 값이에요"
     if t == "value_error":  # 우리가 validator에서 직접 쓴 한국어 문구

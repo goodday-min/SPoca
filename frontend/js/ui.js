@@ -69,3 +69,15 @@ export function trackSlowRequest() {
     }
   };
 }
+
+// --- 날짜 도구 (한국 시간 기준 YYYY-MM-DD) ---
+export function todayKst() {
+  return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+}
+
+/** YYYY-MM-DD 에 days일을 더한 날짜 */
+export function addDays(dateStr, days) {
+  const d = new Date(dateStr + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}

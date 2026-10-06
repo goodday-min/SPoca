@@ -4,6 +4,7 @@
 - 최근 7일: 오늘 포함 7일 (오늘 - 6일 ~ 오늘)
 - 이전 7일: 최근 7일 바로 앞 7일 (오늘 - 13일 ~ 오늘 - 7일)
 - 평균은 기록이 있는 날만으로 계산한다. (복습하지 않은 날은 0으로 기록하지 않기 때문)
+- 최근 7일 날짜별 값(daily)도 함께 준다. 기록 없는 날은 None.
 - 추세: 이전 평균 대비 10% 넘게 높으면 증가, 10% 넘게 낮으면 감소, 그 사이는 유지.
   이전 7일에 기록이 없거나 이전 평균이 0이면, 최근 7일에 기록이 없어도 '비교 불가'.
 """
@@ -70,6 +71,12 @@ def build_summary(records: list[dict], today: date) -> dict:
     recent["period"] = {"start": recent_start.isoformat(), "end": recent_end.isoformat()}
     recent["previous_average"] = _stats(previous_values)["average"]
     recent["trend"] = _trend(recent_values, previous_values)
+    # 최근 7일 날짜별 값 (오래된 날 → 오늘). 기록 없는 날은 value None
+    by_date = {r["date"]: r["value"] for r in records}
+    recent["daily"] = [
+        {"date": d.isoformat(), "value": by_date.get(d.isoformat())}
+        for d in (recent_start + timedelta(days=i) for i in range(RECENT_DAYS))
+    ]
 
     return {"today": today.isoformat(), "overall": overall, "recent_7d": recent}
 

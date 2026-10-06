@@ -29,6 +29,10 @@ class Settings:
     openai_api_key: str
     openai_base_url: str
     openai_model: str
+    # Anthropic 호환 API (사진 읽기용. 교육장은 OpenAI 호환 주소에서 사진 입력을 막아 둬서 이쪽을 쓴다)
+    anthropic_api_key: str
+    anthropic_base_url: str
+    anthropic_vision_model: str
 
 
 def get_settings() -> Settings:
@@ -39,6 +43,9 @@ def get_settings() -> Settings:
         openai_api_key=os.getenv("OPENAI_API_KEY", ""),
         openai_base_url=os.getenv("OPENAI_BASE_URL", ""),
         openai_model=os.getenv("OPENAI_MODEL", ""),
+        anthropic_api_key=os.getenv("ANTHROPIC_API_KEY", ""),
+        anthropic_base_url=os.getenv("ANTHROPIC_BASE_URL", "https://copa.codyssey.kr/v1"),
+        anthropic_vision_model=os.getenv("ANTHROPIC_VISION_MODEL", "claude-sonnet-4"),
     )
 
 

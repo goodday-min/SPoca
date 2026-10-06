@@ -16,6 +16,13 @@
       <!-- 홈 화면 (1차: 복습·영어 대화는 자리만, 다크 모드 토글·N일 연속 배지는 나중에 추가) -->
       <section class="view view-home" data-view="home" hidden>
         <div class="content home">
+          <div class="home-top">
+            <span class="home-top-left"></span><!-- 다크 모드 토글 자리 (M5) -->
+            <span class="streak-badge" id="home-streak" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 .8-3.2 2-4.2 0 2 .8 3 2 3 0-3-1-5 1-8.8z"/></svg>
+              <b id="home-streak-text">0일 연속</b>
+            </span>
+          </div>
           <div class="brand">
             <div class="mascot" aria-hidden="true">
               <svg width="70" height="70" viewBox="0 0 100 100" aria-hidden="true"><rect x="18" y="16" width="64" height="72" rx="12" fill="#136F68"/><rect x="26" y="16" width="56" height="72" rx="10" fill="#1B8A81"/><rect x="34" y="82" width="42" height="4" rx="2" fill="#fff" opacity=".7"/>
@@ -26,13 +33,14 @@
             <div class="tagline">SPEAK · VOCA</div>
           </div>
 
-          <a class="card home-card" href="#/review">
+          <!-- 오늘의 복습 카드: 복습할 단어 있음 / 오늘 복습 완료 / 대상 없음 -->
+          <div class="card home-card" id="home-review">
             <div class="home-row">
               <div class="tile tile-teal"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></div>
-              <div class="home-text"><b>오늘의 복습</b><span>헷갈리는 단어만 탭해서 확인해요</span></div>
+              <div class="home-text"><b>오늘의 복습</b><span id="home-review-sub">불러오는 중…</span></div>
             </div>
-            <p class="soon">복습 기능은 준비 중이에요</p>
-          </a>
+            <a class="go-link go-coral" id="home-review-link" href="#/review" hidden><span id="home-review-link-text">복습 시작</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
+          </div>
 
           <button class="card home-card home-btn" id="home-english" type="button">
             <div class="home-row">
@@ -52,23 +60,117 @@
         </div>
       </section>
 
+      <!-- 단어장 목록 -->
       <section class="view" data-view="words" hidden>
         <header class="topbar">
           <h1 class="title">단어</h1>
-          <div class="topbar-actions"></div>
+          <span class="spacer"></span>
+          <a id="word-add-btn" class="btn btn-create" href="#/word-add">+ 단어 등록</a>
         </header>
         <div class="content">
-          <div class="placeholder">단어 화면은 M3에서 만들어요</div>
+          <div class="word-head">
+            <b id="word-count">단어 -개</b>
+            <div class="seg seg-small" role="tablist" aria-label="정렬">
+              <button type="button" class="seg-btn on" data-sort="latest" role="tab" aria-selected="true">최신 등록순</button>
+              <button type="button" class="seg-btn" data-sort="stage" role="tab" aria-selected="false">단계순</button>
+            </div>
+          </div>
+          <div class="card list-card" id="word-list"></div>
+          <p class="state-msg" id="word-state"></p>
         </div>
       </section>
 
-      <section class="view" data-view="review" hidden>
+      <!-- 단어 등록 (하단 탭 바는 그대로 보인다) -->
+      <section class="view" data-view="word-add" hidden>
         <header class="topbar">
-          <h1 class="title">복습</h1>
-          <div class="topbar-actions"></div>
+          <a class="icon-btn" href="#/words" aria-label="뒤로"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
+          <h1 class="title">단어 등록</h1>
+          <span class="spacer"></span>
         </header>
         <div class="content">
-          <div class="placeholder">복습 화면은 M3에서 만들어요</div>
+          <div class="seg" role="tablist" aria-label="등록 방법">
+            <button type="button" class="seg-btn on" data-mode="manual" role="tab" aria-selected="true">직접 입력</button>
+            <button type="button" class="seg-btn" data-mode="scan" role="tab" aria-selected="false">책 스캔</button>
+          </div>
+
+          <div class="card wa-card" id="wa-manual">
+            <label class="field"><small>단어</small><input id="wa-word" type="text" maxlength="50" autocomplete="off" placeholder="예: resilient"></label>
+            <label class="field"><small>뜻 (선택)</small><input id="wa-meaning" type="text" maxlength="200" autocomplete="off" placeholder="예: 회복력 있는"></label>
+            <label class="field"><small>예문 (선택)</small><input id="wa-example" type="text" maxlength="300" autocomplete="off" placeholder="예: She is resilient."></label>
+          </div>
+
+          <div class="card wa-card" id="wa-scan" hidden>
+            <p class="wa-note">단어장 책의 한 페이지를 사진으로 찍거나 갤러리에서 골라요. 읽은 단어는 확인 없이 바로 등록돼요. 뜻이 사진에 없으면 AI가 한국어 뜻을 채워 줘요(틀릴 수 있으니 단어장에서 고칠 수 있어요).</p>
+            <input id="wa-file" type="file" accept="image/jpeg,image/png,image/webp,image/*" hidden>
+            <button type="button" class="btn btn-open wa-pick" id="wa-pick">사진 선택 (촬영 · 갤러리)</button>
+            <div class="wa-preview" id="wa-preview" hidden>
+              <img id="wa-preview-img" alt="선택한 책 사진">
+              <button type="button" class="btn btn-cancel" id="wa-clear">사진 지우기</button>
+            </div>
+          </div>
+
+          <div class="card wa-card">
+            <small class="wa-label">등록일 (복습 기준일)</small>
+            <div class="chips" id="wa-dates">
+              <button type="button" class="chip on" data-date="today">오늘</button>
+              <button type="button" class="chip" data-date="tomorrow">내일</button>
+              <button type="button" class="chip" data-date="pick">날짜 선택</button>
+            </div>
+            <label class="field wa-pick-date" id="wa-pick-date" hidden><small>날짜 (오늘 이후만)</small><input id="wa-date" type="date"></label>
+          </div>
+
+          <p class="tip" id="wa-error" role="alert" hidden></p>
+          <button type="button" class="btn btn-primary" id="wa-submit">등록하기</button>
+        </div>
+      </section>
+
+      <!-- 오늘의 복습 -->
+      <section class="view" data-view="review" hidden>
+        <header class="topbar">
+          <h1 class="title">오늘의 복습</h1>
+          <span class="rv-count" id="rv-count" hidden></span>
+          <span class="spacer"></span>
+        </header>
+        <div class="content">
+          <div id="rv-body" hidden>
+            <div class="seg" role="tablist" aria-label="학습 방향">
+              <button type="button" class="seg-btn on" data-dir="en2ko" role="tab" aria-selected="true">영어 → 한글</button>
+              <button type="button" class="seg-btn" data-dir="ko2en" role="tab" aria-selected="false">한글 → 영어</button>
+            </div>
+            <p class="rv-hint">헷갈리는 단어만 탭해서 확인하세요. 탭하지 않은 단어는 외운 것으로 처리돼요.</p>
+            <div class="rv-grid" id="rv-grid"></div>
+          </div>
+          <div class="card rv-empty" id="rv-message" hidden>
+            <b id="rv-message-title"></b>
+            <p id="rv-message-sub"></p>
+            <a class="btn btn-open" id="rv-message-link" href="#/word-add" hidden>단어 등록하러 가기</a>
+          </div>
+          <p class="state-msg" id="rv-state"></p>
+        </div>
+        <div class="rv-footer" id="rv-footer" hidden>
+          <button type="button" class="btn btn-primary" id="rv-complete">복습 완료</button>
+        </div>
+      </section>
+
+      <!-- 복습 결과 -->
+      <section class="view" data-view="review-result" hidden>
+        <header class="topbar">
+          <h1 class="title">복습 결과</h1>
+          <span class="spacer"></span>
+        </header>
+        <div class="content">
+          <div class="card rr-hero">
+            <p class="rr-big" id="rr-big">0개를 외웠어요</p>
+            <p class="rr-streak" id="rr-streak"></p>
+          </div>
+          <div class="rr-stats">
+            <div class="card"><small>오늘 복습</small><b id="rr-reviewed">0개</b></div>
+            <div class="card"><small>다시 복습</small><b id="rr-retry">0개</b></div>
+          </div>
+          <h2 class="section-title">다시 복습할 단어</h2>
+          <div class="card list-card" id="rr-list"></div>
+          <p class="state-msg" id="rr-empty" hidden>모두 외웠어요. 다시 복습할 단어가 없어요</p>
+          <a class="btn btn-primary rr-home" href="#/home">홈으로</a>
         </div>
       </section>
 
@@ -167,6 +269,21 @@
       <div class="dialog-btns">
         <button type="button" class="btn btn-cancel" id="rec-cancel">취소</button>
         <button type="submit" class="btn btn-open" id="rec-save">저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="word-dialog" class="dialog" aria-labelledby="word-dialog-title">
+    <form id="word-form" method="dialog" novalidate>
+      <h3 id="word-dialog-title">단어 수정</h3>
+      <p class="info-line" id="word-info"></p>
+      <label class="field"><small>단어</small><input id="wd-word" type="text" maxlength="50" autocomplete="off" required></label>
+      <p class="tip" id="wd-error" role="alert" hidden></p>
+      <label class="field"><small>뜻 (선택)</small><input id="wd-meaning" type="text" maxlength="200" autocomplete="off"></label>
+      <label class="field"><small>예문 (선택)</small><input id="wd-example" type="text" maxlength="300" autocomplete="off"></label>
+      <div class="dialog-btns">
+        <button type="button" class="btn btn-cancel" id="wd-cancel">취소</button>
+        <button type="submit" class="btn btn-open" id="wd-save">저장</button>
       </div>
     </form>
   </dialog>

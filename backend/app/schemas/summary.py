@@ -19,8 +19,14 @@ class StatsOut(BaseModel):
     min: int | None = None
 
 
+class DailyOut(BaseModel):
+    date: str = Field(..., description="날짜 (YYYY-MM-DD)")
+    value: int | None = Field(None, description="그날 외운 단어 수. 기록이 없으면 null")
+
+
 class RecentStatsOut(StatsOut):
     previous_average: float | None = Field(None, description="그 이전 7일의 평균 (기록이 있는 날만)")
+    daily: list[DailyOut] = Field(default_factory=list, description="최근 7일 날짜별 값 (오래된 날 → 오늘)")
     trend: Trend = Field(..., description="이전 7일 평균 대비 증가/감소/유지, 비교할 수 없으면 '비교 불가'")
 
 
