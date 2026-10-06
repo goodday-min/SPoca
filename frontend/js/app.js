@@ -7,6 +7,7 @@ import * as reviewResult from "./review-result.js";
 import * as home from "./home.js";
 import * as report from "./report.js";
 import * as english from "./english.js";
+import * as theme from "./theme.js";
 
 // 화면 전환: 주소의 #/이름 에 맞는 화면(section)만 보여 준다.
 const DEFAULT_ROUTE = "home";
@@ -54,6 +55,7 @@ wordAdd.init();
 review.init();
 report.init();
 english.init();
+theme.init();
 window.addEventListener("hashchange", render);
 render();
 

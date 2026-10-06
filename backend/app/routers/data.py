@@ -1,8 +1,12 @@
+from datetime import datetime, timedelta, timezone
+from typing import Literal
+
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.schemas.data import DataCreate, DataListOut, DataOut, DataUpdate
+from app.schemas.statistics import StatisticsOut
 from app.schemas.summary import SummaryOut
-from app.services import data_service
+from app.services import data_service, export_service, statistics_service
 from app.services import summary_service
 from app.services.data_service import DataNotFoundError, DuplicateDateError
 
@@ -37,6 +41,32 @@ def list_data(
 def get_data_summary():
     """학습 기록 요약 (전체 + 최근 7일, 추세). 코칭 채팅의 프롬프트에 주입할 때도 쓴다."""
     return summary_service.get_summary()
+
+
+@router.get("/statistics", response_model=StatisticsOut)
+def get_data_statistics(
+    start: str | None = Query(None, pattern=DATE_PATTERN, description="이 날짜 이후(포함)만 (YYYY-MM-DD)"),
+    end: str | None = Query(None, pattern=DATE_PATTERN, description="이 날짜 이전(포함)만 (YYYY-MM-DD)"),
+):
+    """학습 통계: 최장 연속 기록(날짜가 이어진 일수)과 요일별 평균. start/end 로 기간을 좁힐 수 있다."""
+    return statistics_service.get_statistics(start, end)
+
+
+@router.get("/export")
+def export_data(
+    format: Literal["csv", "json"] = Query("csv", description="파일 형식"),
+    start: str | None = Query(None, pattern=DATE_PATTERN, description="이 날짜 이후(포함)만 (YYYY-MM-DD)"),
+    end: str | None = Query(None, pattern=DATE_PATTERN, description="이 날짜 이전(포함)만 (YYYY-MM-DD)"),
+):
+    """학습 기록을 파일로 내려받는다 (날짜 오름차순, 날짜·값·메모). start/end 로 기간을 좁힐 수 있다."""
+    rows = data_service.export_items(start, end)
+    today = datetime.now(timezone(timedelta(hours=9))).date().isoformat()
+    if format == "json":
+        content, media = export_service.to_json(rows), "application/json; charset=utf-8"
+    else:
+        content, media = export_service.to_csv(rows), "text/csv; charset=utf-8"
+    filename = f"spoca_records_{today}.{format}"
+    return Response(content, media_type=media, headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 
 
 @router.put("/{doc_id}", response_model=DataOut)

@@ -211,8 +211,32 @@ async function submitDialog(event) {
   }
 }
 
+// ---------- 내보내기 ----------
+/** 지금 보고 있는 탭의 기간만 파일로 받는다 (전체 탭이면 전체 기록) */
+async function exportRecords(format) {
+  try {
+    if (state.range === "recent_7d" && !state.summary) await loadSummary();
+    const { start, end } = listRange();
+    const { blob, filename } = await api.exportData(format, start, end);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast(`${filename} 파일을 저장했어요`);
+  } catch (e) {
+    showToast(e.message, { isError: true });
+  }
+}
+
 // ---------- 연결 ----------
 export function init() {
+  document.querySelectorAll(".rec-actions button").forEach((b) =>
+    b.addEventListener("click", () => withLoading(b, () => exportRecords(b.dataset.format)))
+  );
   $("rec-add").addEventListener("click", () => openDialog());
   $("rec-cancel").addEventListener("click", () => $("rec-dialog").close());
   $("rec-form").addEventListener("submit", submitDialog);

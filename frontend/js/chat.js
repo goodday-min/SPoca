@@ -37,11 +37,18 @@ function botIcon() {
   return ava;
 }
 
-function addMessage(role, text) {
+function addMessage(role, text, tools = []) {
   const list = $("chat-messages");
   const bubble = document.createElement("div");
   bubble.className = "bubble" + (role === "user" ? " me" : "");
   bubble.textContent = text; // 줄바꿈은 CSS(pre-wrap)로 보여 준다
+  if (role !== "user" && tools.length) {
+    // AI가 답을 만들려고 조회한 것 (도구 호출 기록)
+    const note = document.createElement("span");
+    note.className = "tool-note";
+    note.textContent = "조회한 것: " + tools.join(" · ");
+    bubble.append(note);
+  }
   if (role === "user") {
     list.appendChild(bubble);
   } else {
@@ -138,7 +145,7 @@ async function send(text) {
     state.conversationId = res.conversation_id; // 다음 질문이 이어지도록 기억
     wait.stop();
     wait.row.remove();
-    addMessage("assistant", res.reply);
+    addMessage("assistant", res.reply, res.tools || []);
     showSuggestions();
   } catch (e) {
     // 서버에 저장되지 않았으므로 화면에서도 질문을 지우고, 입력창에 되돌려 놓는다
@@ -169,7 +176,7 @@ async function openConversation(id) {
     state.conversationId = conv.id;
     $("chat-messages").replaceChildren();
     showWelcome(false);
-    conv.messages.forEach((m) => addMessage(m.role, m.content));
+    conv.messages.forEach((m) => addMessage(m.role, m.content, m.tools || []));
     $("chat-sheet").close();
     scrollToBottom();
   } catch (e) {

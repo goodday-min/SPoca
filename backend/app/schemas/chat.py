@@ -25,3 +25,4 @@ class ChatResponse(BaseModel):
     conversation_id: str = Field(..., description="저장된 대화 ID (다음 질문에 그대로 보내면 이어진다)")
     title: str
     reply: str = Field(..., description="AI 답변")
+    tools: list[str] = Field(default_factory=list, description="AI가 이 답변을 위해 조회한 것 (없으면 빈 목록)")

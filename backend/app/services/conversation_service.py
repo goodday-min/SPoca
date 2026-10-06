@@ -47,7 +47,7 @@ def create(payload: ConversationCreate) -> dict:
     now = datetime.now(timezone.utc)
     data = {
         "title": make_title(payload.title, payload.messages),
-        "messages": [m.model_dump() for m in payload.messages],
+        "messages": [m.model_dump(exclude_defaults=True) for m in payload.messages],
         "created_at": now,
         "updated_at": now,
     }

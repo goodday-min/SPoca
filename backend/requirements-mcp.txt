@@ -1,0 +1,5 @@
+# MCP 서버(mcp_server.py)를 내 PC에서 돌릴 때만 필요한 추가 패키지.
+# 배포(Render)에는 필요 없으므로 requirements.txt 에는 넣지 않았다.
+#   pip install -r requirements-mcp.txt
+-r requirements.txt
+mcp>=1.2,<2  # 2.x 는 FastMCP 가 MCPServer 로 바뀌어 이 코드와 맞지 않는다

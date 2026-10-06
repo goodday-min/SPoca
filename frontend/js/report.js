@@ -237,6 +237,81 @@ function renderControls() {
   $("rp-month-label").textContent = monthLabel(state.month);
 }
 
+// ---------- 학습 통계 (최장 연속 기록 · 요일별 평균) ----------
+function mdText(iso) {
+  return shortDate(iso);
+}
+
+function renderStats(st) {
+  const box = $("rp-stats");
+  box.replaceChildren();
+  const s = st.longest_streak;
+  const top = document.createElement("div");
+  top.className = "rp-stats-top";
+  const streak = document.createElement("div");
+  const sl = document.createElement("small");
+  sl.textContent = "최장 연속 기록";
+  const sv = document.createElement("b");
+  sv.textContent = s.days ? `${s.days}일` : "-";
+  streak.append(sl, sv);
+  if (s.days) {
+    const sd = document.createElement("span");
+    sd.className = "rp-stats-sub";
+    sd.textContent = `${mdText(s.start)} ~ ${mdText(s.end)}`;
+    streak.append(sd);
+  }
+  const best = document.createElement("div");
+  const bl = document.createElement("small");
+  bl.textContent = "가장 잘한 요일";
+  const bv = document.createElement("b");
+  bv.textContent = st.best_weekday ? `${st.best_weekday}요일` : "-";
+  best.append(bl, bv);
+  top.append(streak, best);
+
+  const cap = document.createElement("p");
+  cap.className = "rp-stats-cap";
+  cap.textContent = "요일별 평균 (기록이 있는 날만, 개)";
+  const cols = document.createElement("div");
+  cols.className = "rp-wd";
+  const max = Math.max(0, ...st.weekday_average.map((w) => w.average || 0));
+  for (const w of st.weekday_average) {
+    const c = document.createElement("div");
+    c.className = "rp-wd-col" + (w.weekday === st.best_weekday ? " best" : "");
+    const val = document.createElement("b");
+    val.textContent = dash(w.average);
+    const bar = document.createElement("i");
+    bar.style.height = w.average && max ? Math.max(4, Math.round((w.average / max) * 72)) + "px" : "2px";
+    const name = document.createElement("span");
+    name.textContent = w.weekday;
+    c.append(val, bar, name);
+    cols.append(c);
+  }
+  box.append(top, cap, cols);
+}
+
+async function loadStats(r, token) {
+  const box = $("rp-stats");
+  const { start, end } = r.summary.period;
+  $("rp-stats-period").textContent = "";
+  try {
+    // 요약 카드와 같은 기간으로 계산한다 (기록이 없는 기간은 start 가 비어 있어 아래에서 빈 통계로 처리)
+    const st = start ? await api.getStatistics(start, end) : null;
+    if (token !== state.token) return;
+    if (!st) {
+      renderStats({
+        longest_streak: { days: 0 },
+        best_weekday: null,
+        weekday_average: ["월", "화", "수", "목", "금", "토", "일"].map((weekday) => ({ weekday, average: null, count: 0 })),
+      });
+    } else {
+      renderStats(st);
+    }
+  } catch (e) {
+    if (token !== state.token) return;
+    box.textContent = "통계를 불러오지 못했어요. " + e.message;
+  }
+}
+
 async function load() {
   const token = ++state.token;
   renderControls();
@@ -251,6 +326,7 @@ async function load() {
     renderSummary(r);
     renderChart(r);
     renderDist(r);
+    loadStats(r, token); // 통계가 늦거나 실패해도 리포트는 먼저 보여 준다
     msg.hidden = true;
     $("rp-body").hidden = false;
   } catch (e) {

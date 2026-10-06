@@ -59,6 +59,16 @@ def list_items(limit: int, cursor: str | None, start: str | None = None, end: st
     return {"items": items, "next_cursor": next_cursor}
 
 
+def export_items(start: str | None = None, end: str | None = None) -> list[dict]:
+    """내보내기용: 기간(양 끝 포함) 안의 모든 기록을 날짜 오름차순으로 돌려준다."""
+    query = _col().order_by("date", direction=Query.ASCENDING)
+    if start:
+        query = query.where(filter=FieldFilter("date", ">=", start))
+    if end:
+        query = query.where(filter=FieldFilter("date", "<=", end))
+    return [{"date": d.to_dict()["date"], "value": d.to_dict()["value"], "memo": d.to_dict().get("memo", "")} for d in query.stream()]
+
+
 def update(doc_id: str, payload: DataUpdate) -> dict:
     ref = _col().document(doc_id)
     if not ref.get().exists:

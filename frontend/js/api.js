@@ -59,6 +59,36 @@ async function request(method, path, { body, query } = {}) {
   return data;
 }
 
+/** 파일 내려받기용: 응답을 JSON이 아닌 파일(Blob)로 받는다. 파일 이름은 서버가 정한 것을 쓴다. */
+async function download(path, query) {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(query || {})) {
+    if (v !== undefined && v !== null && v !== "") params.set(k, v);
+  }
+  const done = trackSlowRequest();
+  let res;
+  try {
+    res = await fetch(API_BASE_URL + path + "?" + params.toString());
+  } catch {
+    done();
+    throw new ApiError(NETWORK_ERROR, 0);
+  }
+  if (!res.ok) {
+    let data = null;
+    try {
+      data = await res.json();
+    } catch {
+      /* JSON이 아닌 응답 */
+    }
+    done();
+    throw new ApiError(data && typeof data.detail === "string" ? data.detail : UNKNOWN_ERROR, res.status);
+  }
+  const blob = await res.blob();
+  done();
+  const match = /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") || "");
+  return { blob, filename: match ? match[1] : "spoca_records." + (query?.format || "csv") };
+}
+
 export const api = {
   get: (path, query) => request("GET", path, { query }),
   post: (path, body) => request("POST", path, { body }),
@@ -72,6 +102,8 @@ export const api = {
   createData: (item) => request("POST", "/data", { body: item }),
   updateData: (id, item) => request("PUT", `/data/${id}`, { body: item }),
   deleteData: (id) => request("DELETE", `/data/${id}`),
+  getStatistics: (start, end) => request("GET", "/data/statistics", { query: { start, end } }),
+  exportData: (format, start, end) => download("/data/export", { format, start, end }),
 
   // --- 영어 대화 ---
   englishScan: (images) => request("POST", "/english/scan", { body: { images } }),

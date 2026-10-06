@@ -11,6 +11,9 @@ MESSAGE_MAX_LENGTH = 4000
 class Message(BaseModel):
     role: Literal["user", "assistant"] = Field(..., description="말한 사람: 나(user) 또는 AI(assistant)")
     content: str = Field(..., min_length=1, max_length=MESSAGE_MAX_LENGTH, description="메시지 내용")
+    tools: list[str] = Field(
+        default_factory=list, max_length=20, description="이 답변을 만들려고 AI가 조회한 것 (AI 메시지에만, 예: '기간별 학습 기록(9/15)')"
+    )
 
 
 class ConversationCreate(BaseModel):
