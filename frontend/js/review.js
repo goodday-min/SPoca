@@ -1,11 +1,10 @@
 // 오늘의 복습 화면: 단어 2열 그리드, 학습 방향 전환, 탭=못 외움(취소 불가), 발음 듣기, 복습 완료
 import { api } from "./api.js";
-import { showToast } from "./ui.js";
+import { showToast, speak } from "./ui.js";
 
 const $ = (id) => document.getElementById(id);
 
 const NO_MEANING = "뜻 없음";
-const NO_SPEECH = "이 브라우저는 음성을 지원하지 않아요";
 
 const state = {
   date: null, // 지금 보고 있는 복습 날짜 (날짜가 바뀌면 탭 표시를 버린다)
@@ -31,19 +30,6 @@ function svgIcon(pathD) {
   path.setAttribute("d", pathD);
   svg.appendChild(path);
   return svg;
-}
-
-// ---------- 발음 듣기 (브라우저 음성 합성) ----------
-function speak(text) {
-  if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
-    showToast(NO_SPEECH);
-    return;
-  }
-  window.speechSynthesis.cancel(); // 앞 소리가 남아 있으면 끊고 새로 읽는다
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "en-US";
-  u.rate = 0.9;
-  window.speechSynthesis.speak(u);
 }
 
 // ---------- 그리드 ----------

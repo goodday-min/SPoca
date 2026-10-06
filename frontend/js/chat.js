@@ -81,6 +81,34 @@ function scrollToBottom() {
   body.scrollTop = body.scrollHeight;
 }
 
+// 답변이 끝날 때마다 예시 질문을 대화 맨 아래에 다시 보여 준다 (처음 화면의 것과 같은 질문)
+function removeSuggestions() {
+  document.getElementById("chat-suggest")?.remove();
+}
+
+function showSuggestions() {
+  removeSuggestions();
+  const box = document.createElement("div");
+  box.id = "chat-suggest";
+  const note = document.createElement("p");
+  note.className = "faint-note";
+  note.textContent = "이런 걸 물어볼 수 있어요";
+  const chips = document.createElement("div");
+  chips.className = "chips";
+  document.querySelectorAll("#chat-welcome .chip").forEach((src) => {
+    const c = document.createElement("button");
+    c.type = "button";
+    c.className = "chip";
+    c.dataset.q = src.dataset.q;
+    c.textContent = src.textContent;
+    c.addEventListener("click", () => send(c.dataset.q));
+    chips.appendChild(c);
+  });
+  box.append(note, chips);
+  $("chat-messages").appendChild(box);
+  scrollToBottom();
+}
+
 function showWelcome(show) {
   $("chat-welcome").hidden = !show;
 }
@@ -91,7 +119,7 @@ function setWaiting(on) {
   $("chat-input").disabled = on;
   $("chat-new").disabled = on;
   $("chat-history").disabled = on;
-  document.querySelectorAll("#chat-welcome .chip").forEach((c) => (c.disabled = on));
+  document.querySelectorAll("#chat-welcome .chip, #chat-suggest .chip").forEach((c) => (c.disabled = on));
 }
 
 // ---------- 보내기 ----------
@@ -100,6 +128,7 @@ async function send(text) {
   if (!text || state.waiting) return;
 
   showWelcome(false);
+  removeSuggestions();
   const userBubble = addMessage("user", text);
   $("chat-input").value = "";
   setWaiting(true);
@@ -110,6 +139,7 @@ async function send(text) {
     wait.stop();
     wait.row.remove();
     addMessage("assistant", res.reply);
+    showSuggestions();
   } catch (e) {
     // 서버에 저장되지 않았으므로 화면에서도 질문을 지우고, 입력창에 되돌려 놓는다
     wait.stop();
@@ -117,6 +147,7 @@ async function send(text) {
     userBubble.remove();
     $("chat-input").value = text;
     if (!$("chat-messages").children.length) showWelcome(true);
+    else showSuggestions(); // 앞선 답변이 있었다면 예시 질문을 다시 보여 준다
     showToast(e.message, { isError: true });
   } finally {
     setWaiting(false);
@@ -127,7 +158,7 @@ async function send(text) {
 // ---------- 새 대화 / 불러오기 ----------
 function resetConversation() {
   state.conversationId = null;
-  $("chat-messages").replaceChildren();
+  $("chat-messages").replaceChildren(); // 예시 질문 블록도 함께 사라진다
   showWelcome(true);
   $("chat-input").value = "";
 }
@@ -243,7 +274,8 @@ export function init() {
   });
 }
 
-/** 이 화면이 보일 때마다 맨 위 요약을 최신으로 */
+/** 이 화면이 보일 때마다 맨 위 요약을 최신으로, 대화는 새 대화로 시작 (이전 대화는 "지난 대화"에서) */
 export function show() {
+  if (!state.waiting) resetConversation(); // 답변을 기다리는 중에 다녀온 경우만 그대로 둔다
   loadStrip();
 }

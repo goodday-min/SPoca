@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.errors import register_error_handlers
-from app.routers import chat, conversations, data, health, review, streak, words
+from app.routers import chat, conversations, data, english, health, report, review, streak, words
 
 app = FastAPI(
     title="스포카 API",
@@ -28,3 +28,5 @@ app.include_router(chat.router, prefix="/api")
 app.include_router(words.router, prefix="/api")
 app.include_router(review.router, prefix="/api")
 app.include_router(streak.router, prefix="/api")
+app.include_router(report.router, prefix="/api")
+app.include_router(english.router, prefix="/api")

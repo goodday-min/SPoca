@@ -23,6 +23,9 @@ FIELD_LABELS = {
     "registered_date": "등록일",
     "sort": "정렬 기준",
     "image": "사진",
+    "images": "사진",
+    "book_text": "책 내용",
+    "level": "난이도",
 }
 FALLBACK = "입력값이 올바르지 않아요"
 

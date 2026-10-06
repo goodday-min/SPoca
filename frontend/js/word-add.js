@@ -69,7 +69,7 @@ function loadImage(file) {
 }
 
 /** 사진을 긴 변 1600px 이하 JPEG로 줄여 data URL로 만든다 */
-async function shrink(file) {
+export async function shrink(file) {
   const img = await loadImage(file);
   const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
   const canvas = document.createElement("canvas");

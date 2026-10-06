@@ -39,16 +39,20 @@ def complete(messages: list[dict]) -> str:
     return text
 
 
-def complete_vision(system: str, text: str, image_data_url: str) -> str:
-    """사진 한 장과 글을 Anthropic 호환 주소(/v1/messages)로 보내 답변 텍스트를 받는다.
+def complete_vision(system: str, text: str, image_data_url: "str | list[str]") -> str:
+    """사진 한 장(또는 여러 장)과 글을 Anthropic 호환 주소(/v1/messages)로 보내 답변 텍스트를 받는다.
 
     교육장 서버는 OpenAI 호환 주소에서 사진 입력을 막아 두었으므로 사진은 이쪽으로만 보낸다.
     image_data_url 은 'data:image/jpeg;base64,....' 모양이어야 한다(요청 검증에서 이미 확인).
     """
     if not settings.anthropic_api_key:
         raise LLMError("ANTHROPIC_API_KEY가 설정되지 않았어요")
-    header, _, data = image_data_url.partition(",")
-    media_type = header.removeprefix("data:").removesuffix(";base64")
+    urls = [image_data_url] if isinstance(image_data_url, str) else list(image_data_url)
+    image_blocks = []
+    for url in urls:
+        header, _, data = url.partition(",")
+        media_type = header.removeprefix("data:").removesuffix(";base64")
+        image_blocks.append({"type": "image", "source": {"type": "base64", "media_type": media_type, "data": data}})
     body = {
         "model": settings.anthropic_vision_model,
         "max_tokens": 4096,
@@ -56,10 +60,7 @@ def complete_vision(system: str, text: str, image_data_url: str) -> str:
         "messages": [
             {
                 "role": "user",
-                "content": [
-                    {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": data}},
-                    {"type": "text", "text": text},
-                ],
+                "content": [*image_blocks, {"type": "text", "text": text}],
             }
         ],
     }

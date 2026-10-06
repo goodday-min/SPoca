@@ -73,6 +73,14 @@ export const api = {
   updateData: (id, item) => request("PUT", `/data/${id}`, { body: item }),
   deleteData: (id) => request("DELETE", `/data/${id}`),
 
+  // --- 영어 대화 ---
+  englishScan: (images) => request("POST", "/english/scan", { body: { images } }),
+  englishChat: (book_text, level, messages) => request("POST", "/english/chat", { body: { book_text, level, messages } }),
+  englishFinish: (book_text, messages) => request("POST", "/english/finish", { body: { book_text, messages } }),
+
+  // --- 리포트 ---
+  getReport: (period = "7d", month) => request("GET", "/report", { query: { period, month } }),
+
   // --- 단어장 ---
   listWords: (sort = "latest") => request("GET", "/words", { query: { sort } }),
   createWord: (item) => request("POST", "/words", { body: item }),

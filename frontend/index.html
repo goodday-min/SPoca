@@ -68,12 +68,21 @@
           <a id="word-add-btn" class="btn btn-create" href="#/word-add">+ 단어 등록</a>
         </header>
         <div class="content">
+          <label class="search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+            <input id="word-search" type="search" placeholder="단어·뜻 검색" autocomplete="off" aria-label="단어 검색">
+          </label>
+          <div class="stage-chips" id="word-chips" role="group" aria-label="단계 고르기"></div>
+          <p class="faint-note stage-note">단계를 누르면 그 단계만 보여요 · 다시 누르면 전체</p>
           <div class="word-head">
             <b id="word-count">단어 -개</b>
-            <div class="seg seg-small" role="tablist" aria-label="정렬">
-              <button type="button" class="seg-btn on" data-sort="latest" role="tab" aria-selected="true">최신 등록순</button>
-              <button type="button" class="seg-btn" data-sort="stage" role="tab" aria-selected="false">단계순</button>
-            </div>
+            <label class="sort-select">
+              <select id="word-sort" aria-label="정렬">
+                <option value="latest">최신순</option>
+                <option value="stage">단계순</option>
+              </select>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg>
+            </label>
           </div>
           <div class="card list-card" id="word-list"></div>
           <p class="state-msg" id="word-state"></p>
@@ -202,10 +211,108 @@
         <p class="ai-note">AI가 생성한 답변이에요</p>
       </section>
 
-      <!-- 학습 기록 화면 (M4 전까지 하단 탭 "리포트"에 임시 연결) -->
-      <section class="view" data-view="report" hidden>
+      <!-- 영어 대화 (홈에서만 진입, 하단 탭 없음) -->
+      <section class="view view-eng" data-view="english" hidden>
         <header class="topbar">
           <a class="icon-btn" href="#/home" aria-label="뒤로"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
+          <h1 class="title">영어 대화</h1>
+          <span class="spacer"></span>
+          <span class="eng-timer" id="eng-timer" hidden>00:00</span>
+          <button type="button" class="btn btn-open" id="eng-end" hidden>대화 끝내기</button>
+        </header>
+        <div class="content eng-content">
+          <p class="state-msg" id="eng-nosupport" hidden>이 브라우저는 음성을 지원하지 않아요</p>
+
+          <div id="eng-step-scan">
+            <p class="eng-lead">책 한 페이지를 사진으로 찍어 주세요.<br>최대 3장까지 합쳐서 읽어요.</p>
+            <div class="eng-pages" id="eng-pages" hidden></div>
+            <div class="eng-pick">
+              <button type="button" class="btn btn-open" id="eng-camera">사진 찍기</button>
+              <button type="button" class="btn btn-create" id="eng-gallery">갤러리에서 고르기</button>
+            </div>
+            <input id="eng-file-camera" type="file" accept="image/*" capture="environment" hidden>
+            <input id="eng-file-gallery" type="file" accept="image/jpeg,image/png,image/webp,image/*" hidden>
+            <p class="tip" id="eng-scan-error" role="alert" hidden></p>
+            <button type="button" class="btn btn-ghost" id="eng-retake" hidden>다시 찍기</button>
+            <button type="button" class="btn btn-primary" id="eng-read" disabled>읽기</button>
+          </div>
+
+          <div id="eng-step-level" hidden>
+            <div class="eng-done" id="eng-done">스캔 완료 · 문장 0개 인식됨</div>
+            <div class="eng-pages eng-pages-small" id="eng-pages-done"></div>
+            <h2 class="section-title">난이도</h2>
+            <div class="eng-levels" role="radiogroup" aria-label="난이도">
+              <button type="button" class="eng-level on" role="radio" aria-checked="true" data-level="Beginner"><b>Beginner</b><span>쉬운 표현 · 짧은 문장</span></button>
+              <button type="button" class="eng-level" role="radio" aria-checked="false" data-level="Advanced"><b>Advanced</b><span>긴 문장 · 다양한 어휘</span></button>
+            </div>
+            <button type="button" class="btn btn-primary" id="eng-start">AI와 대화하기</button>
+            <button type="button" class="btn btn-ghost" id="eng-rescan">사진 다시 찍기</button>
+          </div>
+
+          <div id="eng-step-talk" class="eng-talk" hidden>
+            <div class="eng-messages" id="eng-messages" aria-live="polite"></div>
+            <div class="eng-dock">
+              <p class="eng-status" id="eng-status"></p>
+              <div class="eng-wave" id="eng-wave" aria-hidden="true" hidden><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="eng-dock-btns" id="eng-retry-row" hidden>
+                <button type="button" class="btn btn-open" id="eng-retry">다시 시도</button>
+                <button type="button" class="btn btn-cancel" id="eng-quit" hidden>그냥 나가기</button>
+              </div>
+              <button type="button" class="eng-mic" id="eng-mic" aria-label="마이크를 눌러 말하기">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 리포트 화면 -->
+      <section class="view" data-view="report" hidden>
+        <header class="topbar">
+          <h1 class="title">리포트</h1>
+          <span class="spacer"></span>
+          <a id="rp-records" class="btn btn-open" href="#/records">학습 기록</a>
+        </header>
+        <div class="content">
+          <div class="seg" id="rp-seg" role="tablist" aria-label="기간">
+            <button type="button" class="seg-btn on" data-period="7d" role="tab" aria-selected="true">최근 7일</button>
+            <button type="button" class="seg-btn" data-period="month" role="tab" aria-selected="false">월별</button>
+            <button type="button" class="seg-btn" data-period="all" role="tab" aria-selected="false">전체</button>
+          </div>
+          <div class="rp-month" id="rp-month" hidden>
+            <button type="button" class="icon-btn" id="rp-prev" aria-label="이전 달"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <b id="rp-month-label">2026년 10월</b>
+            <button type="button" class="icon-btn" id="rp-next" aria-label="다음 달"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+          </div>
+          <p class="state-msg" id="rp-state">불러오는 중…</p>
+          <div id="rp-body" hidden>
+            <div class="card" id="rp-summary">
+              <p class="period" id="rp-period"></p>
+              <div class="stats">
+                <div><small>개수</small><b id="rp-count">-</b></div>
+                <div><small>평균</small><b id="rp-avg">-</b></div>
+                <div><small>최대</small><b id="rp-max">-</b></div>
+                <div><small>최소</small><b id="rp-min">-</b></div>
+              </div>
+              <div class="trend"><span id="rp-trend-label">최근 추세</span><b id="rp-trend">-</b></div>
+            </div>
+
+            <h2 class="section-title">일별 외운 단어 수</h2>
+            <div class="card rp-chart-card">
+              <p class="rp-pick" id="rp-pick" hidden></p>
+              <div id="rp-chart" class="rp-chart"></div>
+            </div>
+
+            <h2 class="section-title">단어 단계 분포 <small>지금 상태</small></h2>
+            <div class="card rp-dist" id="rp-dist"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 학습 기록 화면 (리포트 화면의 "학습 기록" 버튼으로 진입) -->
+      <section class="view" data-view="records" hidden>
+        <header class="topbar">
+          <a class="icon-btn" href="#/report" aria-label="뒤로"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
           <h1 class="title">학습 기록</h1>
           <span class="spacer"></span>
           <button id="rec-add" class="btn btn-create" type="button">+ 기록</button>
@@ -258,6 +365,15 @@
       </a>
     </nav>
   </div>
+
+  <dialog id="eng-leave" class="dialog" aria-labelledby="eng-leave-title">
+    <h3 id="eng-leave-title">대화를 그만할까요?</h3>
+    <p class="eng-leave-text">나가면 대화가 사라져요. 단어도 등록되지 않아요.</p>
+    <div class="dialog-btns">
+      <button type="button" class="btn btn-create" id="eng-leave-stay">계속 대화</button>
+      <button type="button" class="btn btn-open" id="eng-leave-go">나가기</button>
+    </div>
+  </dialog>
 
   <dialog id="rec-dialog" class="dialog" aria-labelledby="rec-dialog-title">
     <form id="rec-form" method="dialog" novalidate>

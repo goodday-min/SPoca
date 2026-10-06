@@ -81,3 +81,21 @@ export function addDays(dateStr, days) {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
+
+/** 단계 표기 (저장 값은 그대로 New/V1/V2/V3/Master, 화면에서만 바꿔 보여 준다) */
+export const STAGE_LABEL = { New: "New", V1: "V", V2: "VV", V3: "VVV", Master: "Master" };
+
+const NO_SPEECH = "이 브라우저는 음성을 지원하지 않아요";
+
+/** 영어 단어 발음 듣기 (브라우저 음성 합성) */
+export function speak(text) {
+  if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
+    showToast(NO_SPEECH);
+    return;
+  }
+  window.speechSynthesis.cancel(); // 앞 소리가 남아 있으면 끊고 새로 읽는다
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = 0.9;
+  window.speechSynthesis.speak(u);
+}
