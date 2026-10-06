@@ -124,11 +124,22 @@ python -m pytest tests -v       # 134개
 backend/    FastAPI 서버 (app/routers, services, schemas, core), MCP 서버(mcp_server.py)
 frontend/   바닐라 HTML/CSS/JS
 scripts/    시드 스크립트, 시험·진단 스크립트
-docs/       README에 쓰는 그림 (docs/images)
+docs/       기획 문서(docs/planning), README에 쓰는 그림(docs/images)
 ```
 
 ## 기획 문서
-시나리오, 요구사항 명세서(PRD), 화면 설계서, 작업지시서(TASK)는 claude.ai 프로젝트 "M1_2 AI Agent 개발(스포카)"에 있습니다.
+기획은 **시나리오 → 요구사항 명세서(PRD) → 화면 설계서 → 작업지시서(TASK) → 코드** 순서로 단계마다 합의하며 문서로 남겼습니다. 문서는 [`docs/planning/`](docs/planning/README.md)에 있습니다.
+
+| 문서 | 내용 |
+| --- | --- |
+| [시나리오](docs/planning/01-scenario.md) | 서비스 개요, 기능 구성, 복습 규칙, 하루의 흐름 |
+| [요구사항 명세서(PRD)](docs/planning/02-prd.md) | 기능 요구사항, 데이터 모델, API, 비기능 요구사항 |
+| [확정 사항](docs/planning/03-decisions.md) | 합의된 내용 요약 |
+| [화면 설계서](docs/planning/04-screens.md) | 화면별 구성 |
+| [작업지시서(TASK)](docs/planning/05-task.md) | 마일스톤, 작업별 완료 기준, 구현 중 확정한 결정(최신) |
+| [설명 준비](docs/planning/06-explain.md) | 컨텍스트 주입·라우터/서비스·Pydantic·Firestore CRUD·CORS·키 관리 설명 |
+
+> 기획 단계의 "AI 비서"·"코칭 채팅"은 구현에서 "AI코치"로 이름을 통일했습니다. 구현 중 바뀐 결정은 작업지시서의 "확정된 결정" 표가 최신입니다.
 
 ## 보너스 5.1 — GPT 도구 호출(Function Calling)과 MCP 서버
 
