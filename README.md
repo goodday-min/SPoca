@@ -30,6 +30,10 @@
 | Swagger 문서 | https://spoca-api.onrender.com/docs |
 | 저장소 | https://github.com/goodday-min/SPoca |
 
+| 배포(프론트) URL | Swagger UI |
+| --- | --- |
+| ![alt text](image-3.png) | ![alt text](image-2.png) |
+
 > 백엔드는 무료 플랜이라 한동안 쓰지 않으면 잠들어 있다가 **첫 요청에 30초~1분** 걸릴 수 있습니다(콜드 스타트). 이때 화면에 "서버를 깨우는 중이라 조금 걸려요"가 표시되고, AI코치 답변을 기다리는 말풍선에도 같은 안내가 나옵니다.
 
 ## 과제 목표와 스포카의 답
